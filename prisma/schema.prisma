@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Supabase Auth manages the users table (auth.users).
+// We reference userId as a plain String (UUID from Supabase Auth).
+
+model Thread {
+  id        String    @id @default(uuid())
+  userId    String    // References auth.users.id — enforced in app layer
+  title     String?   // GPT-4o-mini generated, ~5 words
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  messages  Message[]
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("threads")
+}
+
+model Message {
+  id             String   @id @default(uuid())
+  threadId       String
+  thread         Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  role           String   // "user" | "assistant"
+  content        String   // Full text of the message
+  pipeline       String?  // e.g. "multi_book_hyde"
+  chunkRefs      Json?    // [{page, source, collection}]
+  latencyTotalMs Int?
+  createdAt      DateTime @default(now())
+
+  @@index([threadId, createdAt(sort: Desc)])
+  @@map("messages")
+}
+
+// Rate limiting: atomic upsert per user per day. No Redis needed.
+model QueryUsage {
+  userId String
+  day    String  // YYYY-MM-DD
+  count  Int     @default(0)
+
+  @@id([userId, day])
+  @@map("query_usage")
+}
+
+// Per-user quota overrides. null fields = use the global default limit.
+model UserQuota {
+  userId               String   @id
+  monthlyLimitOverride Int?     // null = use FREE_MONTHLY_LIMIT
+  dailyLimitOverride   Int?     // null = use FREE_DAILY_LIMIT
+  note                 String?  // admin note explaining the override
+  updatedAt            DateTime @updatedAt
+
+  @@map("user_quota")
+}
+
+model Subscription {
+  id                 String    @id @default(uuid())
+  userId             String    @unique
+  razorpayCustomerId String?
+  razorpaySubId      String?
+  status             String    @default("inactive") // active | inactive | cancelled
+  currentPeriodEnd   DateTime?
+  createdAt          DateTime  @default(now())
+
+  @@map("subscriptions")
+}
