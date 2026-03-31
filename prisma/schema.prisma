@@ -69,3 +69,13 @@ model Subscription {
 
   @@map("subscriptions")
 }
+
+// IP-based usage tracking for unauthenticated demo
+model DemoUsage {
+  ip    String
+  day   String  // YYYY-MM-DD
+  count Int     @default(0)
+
+  @@id([ip, day])
+  @@map("demo_usage")
+}

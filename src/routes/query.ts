@@ -89,10 +89,11 @@ router.post("/stream", requireAuth, async (req: Request, res: Response) => {
     data:  { count: { increment: 1 } },
   });
 
-  // SSE headers
+  // SSE headers — X-Accel-Buffering: no tells Cloudflare/nginx not to buffer
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
+  res.setHeader("X-Accel-Buffering", "no");
   res.flushHeaders();
 
   const ragUrl = new URL(`${process.env.RAG_API_URL}/query/stream`);

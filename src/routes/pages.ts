@@ -1,12 +1,12 @@
 import { Router } from "express";
-import { requireAuth } from "../middleware/auth";
 import http from "http";
 
 const router = Router();
 
 // GET /page/:collection/:pageNum?highlight=...
-// Proxies the RAG API's PDF page renderer — returns PNG
-router.get("/:collection/:pageNum", requireAuth, async (req, res) => {
+// Proxies the RAG API's PDF page renderer — returns PNG.
+// No auth required: page images contain only textbook content, no user data.
+router.get("/:collection/:pageNum", async (req, res) => {
   const { collection, pageNum } = req.params;
   const highlight = req.query.highlight as string | undefined;
 

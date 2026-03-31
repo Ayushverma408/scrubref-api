@@ -7,8 +7,12 @@ import threadsRouter from "./routes/threads";
 import queryRouter from "./routes/query";
 import pagesRouter from "./routes/pages";
 import imagesRouter from "./routes/images";
+import demoRouter from "./routes/demo";
 
 const app = express();
+
+// Trust one hop of reverse proxy (Cloudflare/nginx) so req.ip resolves correctly
+app.set("trust proxy", 1);
 
 app.use(cors({ origin: process.env.FRONTEND_URL ?? "http://localhost:3000" }));
 app.use(express.json({ limit: "32kb" })); // reject oversized bodies
@@ -33,6 +37,7 @@ const queryLimiter = rateLimit({
 
 app.use(globalLimiter);
 app.use("/query/stream", queryLimiter);
+app.use("/demo/stream", queryLimiter);
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
@@ -40,6 +45,7 @@ app.get("/health", (_req, res) => {
 
 app.use("/threads", threadsRouter);
 app.use("/query", queryRouter);
+app.use("/demo", demoRouter);
 app.use("/page", pagesRouter);
 app.use("/images", imagesRouter);
 
