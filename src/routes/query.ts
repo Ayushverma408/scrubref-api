@@ -31,11 +31,14 @@ router.post("/stream", requireAuth, async (req: Request, res: Response) => {
   const today = new Date().toISOString().slice(0, 10);   // YYYY-MM-DD
   const thisMonth = today.slice(0, 7);                    // YYYY-MM
 
-  // Verify thread belongs to user
-  const thread = await prisma.thread.findFirst({
-    where: { id: threadId, userId: req.userId },
+  // Upsert thread — if query arrives before POST /threads completes (race condition),
+  // create it now so the query can proceed without failing.
+  const thread = await prisma.thread.upsert({
+    where: { id: threadId },
+    create: { id: threadId, userId: req.userId },
+    update: {},
   });
-  if (!thread) {
+  if (thread.userId !== req.userId) {
     res.status(404).json({ error: "Thread not found" });
     return;
   }
@@ -151,6 +154,12 @@ router.post("/stream", requireAuth, async (req: Request, res: Response) => {
           latencyMs = Date.now() - startTime;
         }
 
+        // Ensure thread exists — race-safe for optimistic thread creation
+        await prisma.thread.upsert({
+          where:  { id: threadId },
+          update: {},
+          create: { id: threadId, userId: req.userId!, title: "New conversation" },
+        });
         await prisma.message.create({
           data: {
             threadId,
