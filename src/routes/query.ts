@@ -18,6 +18,7 @@ const QuerySchema = z.object({
   answerDepth:          z.string().optional().default("balanced"),
   answerTone:           z.string().optional().default("teaching"),
   answerRestrictiveness: z.string().optional().default("guided"),
+  vivaMode:             z.boolean().optional().default(false),
 });
 
 router.post("/stream", requireAuth, async (req: Request, res: Response) => {
@@ -27,7 +28,7 @@ router.post("/stream", requireAuth, async (req: Request, res: Response) => {
     return;
   }
 
-  const { question, threadId, freeMode, useHyde, profilePrompt, answerDepth, answerTone, answerRestrictiveness } = parsed.data;
+  const { question, threadId, freeMode, useHyde, profilePrompt, answerDepth, answerTone, answerRestrictiveness, vivaMode } = parsed.data;
   const today = new Date().toISOString().slice(0, 10);   // YYYY-MM-DD
   const thisMonth = today.slice(0, 7);                    // YYYY-MM
 
@@ -191,6 +192,7 @@ router.post("/stream", requireAuth, async (req: Request, res: Response) => {
       answer_depth: answerDepth,
       answer_tone: answerTone,
       answer_restrictiveness: answerRestrictiveness,
+      mode: vivaMode ? "viva" : "standard",
     })
   );
   ragReq.end();

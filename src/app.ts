@@ -5,6 +5,7 @@ import "dotenv/config";
 
 import threadsRouter from "./routes/threads";
 import queryRouter from "./routes/query";
+import quizRouter from "./routes/quiz";
 import pagesRouter from "./routes/pages";
 import imagesRouter from "./routes/images";
 import demoRouter from "./routes/demo";
@@ -37,6 +38,7 @@ const queryLimiter = rateLimit({
 
 app.use(globalLimiter);
 app.use("/query/stream", queryLimiter);
+app.use("/quiz/stream", queryLimiter);
 app.use("/demo/stream", queryLimiter);
 
 app.get("/health", (_req, res) => {
@@ -45,6 +47,7 @@ app.get("/health", (_req, res) => {
 
 app.use("/threads", threadsRouter);
 app.use("/query", queryRouter);
+app.use("/quiz", quizRouter);
 app.use("/demo", demoRouter);
 app.use("/page", pagesRouter);
 app.use("/images", imagesRouter);

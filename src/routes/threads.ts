@@ -21,10 +21,17 @@ router.get("/", requireAuth, async (req, res) => {
 });
 
 // POST /threads — create a new thread
+// Accepts optional client-provided `id` (UUID) so the frontend can navigate
+// to the thread immediately before the round-trip completes.
 router.post("/", requireAuth, async (req, res) => {
   try {
+    const { id } = req.body ?? {};
     const thread = await prisma.thread.create({
-      data: { userId: req.userId, title: "New conversation" },
+      data: {
+        ...(id ? { id } : {}),
+        userId: req.userId,
+        title: "New conversation",
+      },
     });
     res.status(201).json(thread);
   } catch (err) {
