@@ -13,7 +13,7 @@ const QuerySchema = z.object({
   question:             z.string().min(1).max(2000),
   threadId:             z.string().uuid(),
   freeMode:             z.boolean().optional().default(false),
-  useHyde:              z.boolean().optional().default(true),
+  useHyde:              z.boolean().optional().default(false),
   profilePrompt:        z.string().optional().default(""),
   answerDepth:          z.string().optional().default("balanced"),
   answerTone:           z.string().optional().default("teaching"),
