@@ -78,8 +78,9 @@ router.post("/stream", requireAuth, async (req: Request, res: Response) => {
 
   // Auto-title thread on first message
   if (!thread.title || thread.title === "New conversation") {
-    const words = question.trim().split(/\s+/).slice(0, 6).join(" ");
-    const title = words.length < question.trim().length ? words + "…" : words;
+    const q     = question.trim().replace(/\?+$/, "");   // strip trailing "?"
+    const words = q.split(/\s+/);
+    const title = words.length > 7 ? words.slice(0, 7).join(" ") + "…" : q;
     await prisma.thread.update({ where: { id: threadId }, data: { title } });
   }
 
